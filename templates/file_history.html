@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Version History - MVCS{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h1>Version History</h1>
+    <h2>{{ file.filename }}</h2>
+
+    <div class="actions">
+        <a class="btn" href="{{ url_for('auth.new_version', file_id=file.id) }}">
+            + Upload New Version
+        </a>
+
+        <a class="btn btn-secondary" href="{{ url_for('auth.project', project_id=project.id) }}">
+            Back to Project
+        </a>
+    </div>
+</div>
+
+<div class="card">
+
+    {% if versions %}
+
+    {% for version in versions %}
+
+    <div class="version-item">
+
+        <h3>Version {{ version.version_number }}</h3>
+
+        <p>
+            Created:
+            {{ version.created_at }}
+        </p>
+
+        <div class="actions">
+
+            <a class="btn" href="{{ url_for('auth.download_version',
+                       version_id=version.id) }}">
+                Download
+            </a>
+
+            <form method="POST" action="{{ url_for('auth.restore_version',
+                          version_id=version.id) }}">
+
+                <button type="submit">
+                    Restore
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+    {% else %}
+
+    <p>No versions found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

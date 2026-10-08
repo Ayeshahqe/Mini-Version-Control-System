@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MVCS{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h1>Welcome, {{ user.name }}</h1>
+    <p>Your projects</p>
+</div>
+
+<div class="card">
+    <div class="actions">
+        <a class="btn" href="{{ url_for('auth.create_project') }}">
+            + Create Project
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Projects</h2>
+
+    {% if projects %}
+    {% for project in projects %}
+    <div class="file-item">
+        <h3>{{ project.name }}</h3>
+
+        <a class="btn" href="{{ url_for('auth.project', project_id=project.id) }}">
+            Open Project
+        </a>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No projects yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

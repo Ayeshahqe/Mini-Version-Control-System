@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}New Version - MVCS{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Upload New Version</h1>
+
+    <p>File: <strong>{{ file.filename }}</strong></p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <label>Select new version</label>
+
+        <input type="file" name="file" required>
+
+        <button type="submit">
+            Upload New Version
+        </button>
+
+    </form>
+
+    <br>
+
+    <a class="btn btn-secondary" href="{{ url_for('auth.file_history', file_id=file.id) }}">
+        Back to Version History
+    </a>
+
+</div>
+
+{% endblock %}
