@@ -4,64 +4,80 @@
 
 {% block content %}
 
-<div class="card">
-    <h1>Version History</h1>
-    <h2>{{ file.filename }}</h2>
+<div class="page-header">
+    <div>
+        <h1>{{ file.filename }}</h1>
+        <p>{{ versions|length }} version(s)</p>
+    </div>
 
     <div class="actions">
-        <a class="btn" href="{{ url_for('auth.new_version', file_id=file.id) }}">
-            + Upload New Version
-        </a>
-
         <a class="btn btn-secondary" href="{{ url_for('auth.project', project_id=project.id) }}">
             Back to Project
         </a>
+
+        {% if versions|length >= 2 %}
+        <a class="btn btn-secondary" href="{{ url_for('auth.compare_versions', file_id=file.id) }}">
+            Compare Versions
+        </a>
+        {% endif %}
+
+        <a class="btn" href="{{ url_for('auth.new_version', file_id=file.id) }}">
+            + Upload New Version
+        </a>
     </div>
 </div>
 
-<div class="card">
+<h2>Versions</h2>
 
-    {% if versions %}
-
+{% if versions %}
+<div class="version-list">
     {% for version in versions %}
+    <div class="version-card {% if loop.first %}latest{% endif %}">
 
-    <div class="version-item">
+        <h3>
+            Version {{ version.version_number }}
+            {% if loop.first %}<span class="badge-latest">Latest</span>{% endif %}
+            {% if version.tag %}<span class="tag">{{ version.tag }}</span>{% endif %}
+        </h3>
 
-        <h3>Version {{ version.version_number }}</h3>
+        <div class="version-details">
+            <div class="detail-box">
+                <span>ID</span>
+                <code>{{ version.file_hash[:7] if version.file_hash else "-" }}</code>
+            </div>
+            <div class="detail-box">
+                <span>Created</span>
+                <strong>{{ version.created_at.strftime("%d %b %Y, %H:%M") }}</strong>
+            </div>
+        </div>
 
-        <p>
-            Created:
-            {{ version.created_at }}
-        </p>
+        <div class="version-actions">
 
-        <div class="actions">
+            <form method="POST" action="{{ url_for('auth.tag_version', version_id=version.id) }}" class="tag-form">
+                <input type="text" name="tag" placeholder="Tag (e.g. v1.0)" value="{{ version.tag or '' }}"
+                    maxlength="50">
+                <button type="submit" class="btn-secondary">Save Tag</button>
+            </form>
 
-            <a class="btn" href="{{ url_for('auth.download_version',
-                       version_id=version.id) }}">
+            <a class="btn btn-secondary" href="{{ url_for('auth.download_version', version_id=version.id) }}">
                 Download
             </a>
 
-            <form method="POST" action="{{ url_for('auth.restore_version',
-                          version_id=version.id) }}">
-
-                <button type="submit">
-                    Restore
-                </button>
-
+            {% if not loop.first %}
+            <form method="POST" action="{{ url_for('auth.restore_version', version_id=version.id) }}"
+                onsubmit="return confirm('Restore Version {{ version.version_number }}? A new version will be created with its content.');">
+                <button type="submit">Restore</button>
             </form>
+            {% endif %}
 
         </div>
-
     </div>
-
     {% endfor %}
-
-    {% else %}
-
-    <p>No versions found.</p>
-
-    {% endif %}
-
 </div>
+{% else %}
+<div class="card">
+    <p>No versions found.</p>
+</div>
+{% endif %}
 
 {% endblock %}

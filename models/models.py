@@ -34,5 +34,15 @@ class Version(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     version_number = db.Column(db.Integer, nullable=False)
     file_path = db.Column(db.String(500), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     file_id = db.Column(db.Integer, db.ForeignKey("file.id"), nullable=False)
+    file_hash = db.Column(db.String(64))
+    tag = db.Column(db.String(50))
+
+
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    action = db.Column(db.String(30), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)

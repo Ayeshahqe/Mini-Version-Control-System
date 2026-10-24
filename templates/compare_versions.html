@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Versions - MVCS{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Compare Versions</h1>
+
+    <p>
+        File: <strong>{{ file.filename }}</strong>
+    </p>
+
+    <form method="GET" action="{{ url_for('auth.compare_versions', file_id=file.id) }}">
+
+        <label for="first">First Version</label>
+
+        <select name="first" id="first" required>
+
+            {% for version in versions %}
+
+            <option value="{{ version.id }}" {% if first_version and first_version.id==version.id %} selected {% endif
+                %}>
+
+                Version {{ version.version_number }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <br><br>
+
+        <label for="second">Second Version</label>
+
+        <select name="second" id="second" required>
+
+            {% for version in versions %}
+
+            <option value="{{ version.id }}" {% if second_version and second_version.id==version.id %} selected {% elif
+                not second_version and loop.last %} selected {% endif %}>
+
+                Version {{ version.version_number }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <br><br>
+
+        <button type="submit">Compare</button>
+
+    </form>
+
+</div>
+
+{% if error_message %}
+
+<div class="card">
+    <p class="error">{{ error_message }}</p>
+</div>
+
+{% endif %}
+
+{% if differences is not none %}
+
+<div class="card">
+
+    <h2>Comparison Result</h2>
+
+    {% if differences %}
+
+    <div class="diff-legend">
+        <span class="diff-line added">+ Added</span>
+        <span class="diff-line removed">- Removed</span>
+    </div>
+
+    <div class="diff-box">
+        {% for line in differences %}
+        <div class="diff-line {{ line.kind }}">{{ line.text }}</div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+
+    <p>The two versions have identical content.</p>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+<div class="card">
+
+    <a class="btn btn-secondary" href="{{ url_for('auth.file_history', file_id=file.id) }}">
+
+        Back to Version History
+
+    </a>
+
+</div>
+
+{% endblock %}

@@ -1,6 +1,8 @@
 from flask import Flask, render_template, session, redirect, url_for
-from models.models import db, User
+from models.models import db, User, File, Version, Activity
 from routes import auth
+from file_routes.file_management import file_bp
+
 import os
 from dotenv import load_dotenv
 
@@ -19,6 +21,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 app.register_blueprint(auth)
+app.register_blueprint(file_bp)
 
 with app.app_context():
     db.create_all()
@@ -35,11 +38,37 @@ def dashboard():
         return redirect(url_for("auth.login"))
 
     user = User.query.get(session["user_id"])
+    project_ids = [p.id for p in user.projects]
+
+    total_files = 0
+    total_versions = 0
+
+    if project_ids:
+        total_files = File.query.filter(
+            File.project_id.in_(project_ids)).count()
+        total_versions = (
+            Version.query
+            .join(File, Version.file_id == File.id)
+            .filter(File.project_id.in_(project_ids))
+            .count()
+        )
+
+    activities = (
+        Activity.query
+        .filter_by(user_id=user.id)
+        .order_by(Activity.created_at.desc())
+        .limit(10)
+        .all()
+    )
 
     return render_template(
         "dashboard.html",
         user=user,
-        projects=user.projects
+        projects=user.projects,
+        total_projects=len(project_ids),
+        total_files=total_files,
+        total_versions=total_versions,
+        activities=activities,
     )
 
 

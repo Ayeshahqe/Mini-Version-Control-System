@@ -1,21 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Version Control System</title>
-</head>
+{% block title %}Welcome | MVCS{% endblock %}
 
-<body>
+{% block content %}
+<h1>Mini Version Control System</h1>
+<p>Manage your projects and file versions easily.</p>
 
-    <h1>Mini Version Control System</h1>
-
-    <p>Manage your projects and file versions easily.</p>
-
-    <button>Create Project</button>
-    <button>Login</button>
-
-</body>
-
-</html>
+<a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+<a href="{{ url_for('auth.register') }}" class="btn">Register</a>
+{% endblock %}

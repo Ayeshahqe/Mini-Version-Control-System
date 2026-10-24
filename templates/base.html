@@ -5,29 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MVCS{% endblock %}</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-    <nav class="navbar">
-        <strong>Mini Version Control System</strong>
+    {% if session.get("user_id") %}
 
-        <div>
-            {% if session.get("user_id") %}
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-            {% else %}
-            <a href="{{ url_for('auth.login') }}">Login</a>
-            <a href="{{ url_for('auth.register') }}">Register</a>
-            {% endif %}
-        </div>
-    </nav>
+    <div class="app-shell">
 
-    <div class="container">
-        {% block content %}{% endblock %}
+        <aside class="sidebar">
+            <div class="sidebar-brand">MVCS</div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}"
+                    class="{{ 'active' if request.endpoint in ['dashboard', 'auth.project', 'auth.create_project', 'auth.upload_file'] }}">Dashboard</a>
+
+                <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="workspace">
+            <div class="workspace-inner">
+
+                {% else %}
+
+                <nav class="navbar">
+                    <strong>Mini Version Control System</strong>
+                    <div>
+                        <a href="{{ url_for('auth.login') }}">Login</a>
+                        <a href="{{ url_for('auth.register') }}">Register</a>
+                    </div>
+                </nav>
+
+                <div class="container">
+
+                    {% endif %}
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+
+                    {% if session.get("user_id") %}
+                </div>
+        </main>
     </div>
+    {% else %}
+    </div>
+    {% endif %}
 
 </body>
 

@@ -4,20 +4,25 @@
 
 {% block content %}
 
-<div class="card">
-    <h1>{{ project.name }}</h1>
-    <p>Project ID: {{ project.id }}</p>
-</div>
+<div class="page-header">
+    <div>
+        <h1>{{ project.name }}</h1>
+        <p>{{ project.files|length }} file(s)</p>
+    </div>
 
-<div class="card">
     <div class="actions">
+        <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">
+            Back to Dashboard
+        </a>
+
         <a class="btn" href="{{ url_for('auth.upload_file', project_id=project.id) }}">
             + Upload File
         </a>
 
-        <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">
-            Back to Dashboard
-        </a>
+        <form method="POST" action="{{ url_for('auth.delete_project', project_id=project.id) }}"
+            onsubmit="return confirm('Delete this project and ALL its files and versions? This cannot be undone.');">
+            <button type="submit" class="btn-danger">Delete Project</button>
+        </form>
     </div>
 </div>
 
@@ -26,14 +31,24 @@
 
     {% if project.files %}
     {% for file in project.files %}
-    <div class="file-item">
+    <div class="file-item file-row">
         <strong>{{ file.filename }}</strong>
 
-        <br><br>
+        <div class="actions">
+            <a class="btn" href="{{ url_for('auth.file_history', file_id=file.id) }}">
+                Version History
+            </a>
 
-        <a class="btn" href="{{ url_for('auth.file_history', file_id=file.id) }}">
-            Version History
-        </a>
+            <a class="btn btn-secondary"
+                href="{{ url_for('files.download_file', project_id=project.id, file_id=file.id) }}">
+                Download
+            </a>
+
+            <form method="POST" action="{{ url_for('files.delete_file', project_id=project.id, file_id=file.id) }}"
+                onsubmit="return confirm('Delete this file and all its versions?');">
+                <button type="submit" class="btn-danger">Delete</button>
+            </form>
+        </div>
     </div>
     {% endfor %}
     {% else %}
