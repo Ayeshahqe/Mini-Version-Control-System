@@ -95,5 +95,3 @@
 | TC-43 | Attempt to access another user's file | Access is denied |
 | TC-44 | Check the database password field | Password is stored as a hash, not plain text |
 | TC-45 | Restart the application and check saved project data | Previously saved database records remain available |
-
-**Note:** These are planned test cases. A test should be considered passed only after performing it and confirming the actual result.
