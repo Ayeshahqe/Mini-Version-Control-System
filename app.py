@@ -1,14 +1,17 @@
+# imports for flask and its modules
 from flask import Flask, render_template, session, redirect, url_for
 from models.models import db, User, File, Version, Activity
 from routes import auth
 from file_routes.file_management import file_bp
 
-import os
+import os   # imports for operating system and environment variable management
+# imports for loading environment variables from a .env file
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__)  # Initialize the Flask application
+
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
@@ -26,6 +29,8 @@ app.register_blueprint(file_bp)
 with app.app_context():
     db.create_all()
 
+# route for the home page
+
 
 @app.route("/")
 def home():
@@ -34,16 +39,17 @@ def home():
 
 @app.route("/dashboard")
 def dashboard():
-    if "user_id" not in session:
+    if "user_id" not in session:    # If the user is not logged in, redirect to the login page
         return redirect(url_for("auth.login"))
 
+    # Get the user object from the database using the user_id
     user = User.query.get(session["user_id"])
-    project_ids = [p.id for p in user.projects]
+    project_ids = [p.id for p in user.projects]  # Get the IDs of all projects
 
     total_files = 0
     total_versions = 0
 
-    if project_ids:
+    if project_ids:  # count the total number of files and versions
         total_files = File.query.filter(
             File.project_id.in_(project_ids)).count()
         total_versions = (
@@ -53,7 +59,7 @@ def dashboard():
             .count()
         )
 
-    activities = (
+    activities = (      # Get the 10 most recent activities for the user
         Activity.query
         .filter_by(user_id=user.id)
         .order_by(Activity.created_at.desc())
@@ -71,6 +77,8 @@ def dashboard():
         activities=activities,
     )
 
+# Handle errors
+
 
 @app.errorhandler(404)
 def page_not_found(error):
@@ -81,7 +89,7 @@ def page_not_found(error):
     ), 404
 
 
-@app.errorhandler(500)
+@app.errorhandler(500)  #
 def internal_error(error):
     db.session.rollback()
 

@@ -1,62 +1,56 @@
+<!---common structure and layout for all pages--->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MVCS{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-    {% if session.get("user_id") %}
+    <nav class="navbar">
+        {% if session.get("user_id") %}
 
-    <div class="app-shell">
+        <a href="{{ url_for('dashboard') }}" class="brand">MiniVersionControlSystem</a>
 
-        <aside class="sidebar">
-            <div class="sidebar-brand">MVCS</div>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-logout">Logout</a>
+        </div>
 
-            <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard') }}"
-                    class="{{ 'active' if request.endpoint in ['dashboard', 'auth.project', 'auth.create_project', 'auth.upload_file'] }}">Dashboard</a>
+        {% else %}
 
-                <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
-            </nav>
-        </aside>
+        <a href="{{ url_for('home') }}" class="brand">MiniVersionControlSystem</a>
 
-        <main class="workspace">
-            <div class="workspace-inner">
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('auth.login') }}">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="nav-btn">Get Started</a>
+        </div>
 
-                {% else %}
+        {% endif %}
+    </nav>
 
-                <nav class="navbar">
-                    <strong>Mini Version Control System</strong>
-                    <div>
-                        <a href="{{ url_for('auth.login') }}">Login</a>
-                        <a href="{{ url_for('auth.register') }}">Register</a>
-                    </div>
-                </nav>
+    <div class="{% block page_class %}container{% endblock %}">
 
-                <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endwith %}
 
-                    {% endif %}
+        {% block content %}{% endblock %}
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                    {% endwith %}
-
-                    {% block content %}{% endblock %}
-
-                    {% if session.get("user_id") %}
-                </div>
-        </main>
     </div>
-    {% else %}
-    </div>
-    {% endif %}
+
+    <footer class="footer">
+        <p>MiniVersionControlSystem &middot; Reliable File Version Control</p>
+    </footer>
 
 </body>
 

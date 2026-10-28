@@ -4,16 +4,21 @@
 
 {% block content %}
 
-<div class="card">
-    <h1>Create New Project</h1>
+<div class="page-header">
+    <div>
+        <h1>Create Project</h1>
+        <p>A project holds your files and all their versions.</p>
+    </div>
+</div>
 
+<div class="card form-card">
     <form method="POST">
-        <label for="name">Project Name</label>
-        <input type="text" name="name" id="name" placeholder="Enter project name" required>
+        <label for="name">Project name</label>
+        <input type="text" name="name" id="name" placeholder="e.g. Final Report" maxlength="100" required>
 
         <div class="actions">
             <button type="submit">Create Project</button>
-            <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Cancel</a>
         </div>
     </form>
 </div>

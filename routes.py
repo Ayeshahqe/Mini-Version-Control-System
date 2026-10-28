@@ -1,4 +1,8 @@
-import difflib
+# the routes of the application, including user authentication, project management, file uploads, version control, and activity logging.
+# It defines the endpoints for creating projects, uploading files, managing versions, comparing versions, downloading files,
+# restoring versions, deleting projects, and tagging versions.
+
+import difflib  # import for comparing text files and generating unified diffs
 import os
 import shutil
 import hashlib
@@ -24,7 +28,7 @@ ALLOWED_EXTENSIONS = {
 auth = Blueprint("auth", __name__)
 
 
-def log_activity(action, description):
+def log_activity(action, description):  # Log an activity in the database
     db.session.add(Activity(
         user_id=session["user_id"],
         action=action,
@@ -33,7 +37,7 @@ def log_activity(action, description):
     db.session.commit()
 
 
-def get_file_hash(path):
+def get_file_hash(path):    # Calculate the SHA-256 hash of a file at the given path
     sha256 = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
@@ -129,9 +133,24 @@ def project(project_id):
     if project.user_id != session["user_id"]:
         return "Access denied", 403
 
+    project_versions = (
+        Version.query
+        .join(File, Version.file_id == File.id)
+        .filter(File.project_id == project.id)
+    )
+
+    recent_versions = (
+        project_versions
+        .order_by(Version.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
     return render_template(
         "project.html",
-        project=project
+        project=project,
+        recent_versions=recent_versions,
+        total_versions=project_versions.count(),
     )
 
 

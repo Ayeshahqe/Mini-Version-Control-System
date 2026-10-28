@@ -4,20 +4,15 @@
 
 {% block content %}
 
+<div class="breadcrumb">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a> / <span>{{ project.name }}</span>
+</div>
+
 <div class="page-header">
-    <div>
-        <h1>{{ project.name }}</h1>
-        <p>{{ project.files|length }} file(s)</p>
-    </div>
+    <h1>{{ project.name }}</h1>
 
     <div class="actions">
-        <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">
-            Back to Dashboard
-        </a>
-
-        <a class="btn" href="{{ url_for('auth.upload_file', project_id=project.id) }}">
-            + Upload File
-        </a>
+        <a class="btn" href="{{ url_for('auth.upload_file', project_id=project.id) }}">+ Upload File</a>
 
         <form method="POST" action="{{ url_for('auth.delete_project', project_id=project.id) }}"
             onsubmit="return confirm('Delete this project and ALL its files and versions? This cannot be undone.');">
@@ -26,23 +21,60 @@
     </div>
 </div>
 
-<div class="card">
-    <h2>Files</h2>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ project.files|length }}</div>
+        <div class="stat-label">Files</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_versions }}</div>
+        <div class="stat-label">Versions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number small">
+            {% if recent_versions and recent_versions[0].created_at %}
+            {{ recent_versions[0].created_at.strftime("%d %b %Y, %H:%M") }}
+            {% else %}-{% endif %}
+        </div>
+        <div class="stat-label">Last updated</div>
+    </div>
+</div>
 
-    {% if project.files %}
+{% if project.files %}
+<div class="card list-card">
+
+    <div class="list-header">
+        <span>Files</span>
+        <span class="row-meta">{{ project.files|length }} total</span>
+    </div>
+
     {% for file in project.files %}
-    <div class="file-item file-row">
-        <strong>{{ file.filename }}</strong>
+    {% set latest = file.versions|sort(attribute='version_number')|last %}
 
-        <div class="actions">
-            <a class="btn" href="{{ url_for('auth.file_history', file_id=file.id) }}">
-                Version History
-            </a>
+    <div class="list-row">
+        <div class="row-main">
+            <div class="ext-badge">{{ file.filename.rsplit('.', 1)[-1]|upper }}</div>
+            <div>
+                <div class="row-title">
+                    {{ file.filename }}
+                    {% if latest and latest.tag %}<span class="tag">{{ latest.tag }}</span>{% endif %}
+                </div>
+                <div class="row-meta">
+                    {% if latest %}
+                    v{{ latest.version_number }} &middot; {{ file.versions|length }} version(s)
+                    &middot; updated {{ latest.created_at.strftime("%d %b %Y, %H:%M") }}
+                    {% else %}
+                    No versions
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row-actions">
+            <a class="btn" href="{{ url_for('auth.file_history', file_id=file.id) }}">History</a>
 
             <a class="btn btn-secondary"
-                href="{{ url_for('files.download_file', project_id=project.id, file_id=file.id) }}">
-                Download
-            </a>
+                href="{{ url_for('files.download_file', project_id=project.id, file_id=file.id) }}">Download</a>
 
             <form method="POST" action="{{ url_for('files.delete_file', project_id=project.id, file_id=file.id) }}"
                 onsubmit="return confirm('Delete this file and all its versions?');">
@@ -51,9 +83,45 @@
         </div>
     </div>
     {% endfor %}
-    {% else %}
-    <p>No files uploaded yet.</p>
-    {% endif %}
+
 </div>
+
+<div class="card list-card">
+
+    <div class="list-header">
+        <span>Recent changes</span>
+        <span class="row-meta">Last 5 versions</span>
+    </div>
+
+    {% for v in recent_versions %}
+    <div class="list-row">
+        <div class="row-main">
+            <span class="dot {% if loop.first %}latest{% endif %}"></span>
+            <div>
+                <div class="row-title">
+                    {{ v.file.filename }}
+                    {% if v.tag %}<span class="tag">{{ v.tag }}</span>{% endif %}
+                </div>
+                <div class="row-meta">
+                    Version {{ v.version_number }}
+                    &middot; ID <code>{{ v.file_hash[:7] if v.file_hash else "-" }}</code>
+                    &middot; {{ v.created_at.strftime("%d %b %Y, %H:%M") }}
+                </div>
+            </div>
+        </div>
+
+        <a class="btn btn-secondary" href="{{ url_for('auth.file_history', file_id=v.file_id) }}">View history</a>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% else %}
+<div class="card empty">
+    <h3>No files yet</h3>
+    <p>Upload your first file to create Version 1.</p>
+    <a class="btn" href="{{ url_for('auth.upload_file', project_id=project.id) }}">+ Upload File</a>
+</div>
+{% endif %}
 
 {% endblock %}

@@ -7,61 +7,54 @@
 <div class="page-header">
     <div>
         <h1>{{ file.filename }}</h1>
-        <p>{{ versions|length }} version(s)</p>
+        <p>{{ project.name }} &middot; {{ versions|length }} version(s)</p>
     </div>
 
     <div class="actions">
-        <a class="btn btn-secondary" href="{{ url_for('auth.project', project_id=project.id) }}">
-            Back to Project
-        </a>
+        <a class="btn btn-secondary" href="{{ url_for('auth.project', project_id=project.id) }}">Back to Project</a>
 
         {% if versions|length >= 2 %}
-        <a class="btn btn-secondary" href="{{ url_for('auth.compare_versions', file_id=file.id) }}">
-            Compare Versions
-        </a>
+        <a class="btn btn-secondary" href="{{ url_for('auth.compare_versions', file_id=file.id) }}">Compare Versions</a>
         {% endif %}
 
-        <a class="btn" href="{{ url_for('auth.new_version', file_id=file.id) }}">
-            + Upload New Version
-        </a>
+        <a class="btn" href="{{ url_for('auth.new_version', file_id=file.id) }}">+ Upload New Version</a>
     </div>
 </div>
 
-<h2>Versions</h2>
+<div class="card list-card">
 
-{% if versions %}
-<div class="version-list">
+    <div class="list-header">
+        <span>Version history</span>
+        <span class="row-meta">Newest first</span>
+    </div>
+
     {% for version in versions %}
-    <div class="version-card {% if loop.first %}latest{% endif %}">
+    <div class="list-row">
 
-        <h3>
-            Version {{ version.version_number }}
-            {% if loop.first %}<span class="badge-latest">Latest</span>{% endif %}
-            {% if version.tag %}<span class="tag">{{ version.tag }}</span>{% endif %}
-        </h3>
-
-        <div class="version-details">
-            <div class="detail-box">
-                <span>ID</span>
-                <code>{{ version.file_hash[:7] if version.file_hash else "-" }}</code>
-            </div>
-            <div class="detail-box">
-                <span>Created</span>
-                <strong>{{ version.created_at.strftime("%d %b %Y, %H:%M") }}</strong>
+        <div class="row-main">
+            <span class="dot {% if loop.first %}latest{% endif %}"></span>
+            <div>
+                <div class="row-title">
+                    Version {{ version.version_number }}
+                    {% if loop.first %}<span class="badge-latest">Latest</span>{% endif %}
+                    {% if version.tag %}<span class="tag">{{ version.tag }}</span>{% endif %}
+                </div>
+                <div class="row-meta">
+                    ID <code>{{ version.file_hash[:7] if version.file_hash else "-" }}</code>
+                    &middot; {{ version.created_at.strftime("%d %b %Y, %H:%M") }}
+                </div>
             </div>
         </div>
 
-        <div class="version-actions">
-
+        <div class="row-actions">
             <form method="POST" action="{{ url_for('auth.tag_version', version_id=version.id) }}" class="tag-form">
                 <input type="text" name="tag" placeholder="Tag (e.g. v1.0)" value="{{ version.tag or '' }}"
                     maxlength="50">
                 <button type="submit" class="btn-secondary">Save Tag</button>
             </form>
 
-            <a class="btn btn-secondary" href="{{ url_for('auth.download_version', version_id=version.id) }}">
-                Download
-            </a>
+            <a class="btn btn-secondary"
+                href="{{ url_for('auth.download_version', version_id=version.id) }}">Download</a>
 
             {% if not loop.first %}
             <form method="POST" action="{{ url_for('auth.restore_version', version_id=version.id) }}"
@@ -69,15 +62,13 @@
                 <button type="submit">Restore</button>
             </form>
             {% endif %}
-
         </div>
+
     </div>
+    {% else %}
+    <div class="empty">No versions found.</div>
     {% endfor %}
+
 </div>
-{% else %}
-<div class="card">
-    <p>No versions found.</p>
-</div>
-{% endif %}
 
 {% endblock %}

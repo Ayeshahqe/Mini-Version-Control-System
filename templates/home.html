@@ -1,11 +1,123 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome | MVCS{% endblock %}
+{% block title %}Mini Version Control System{% endblock %}
+
+{% block page_class %}landing{% endblock %}
 
 {% block content %}
-<h1>Mini Version Control System</h1>
-<p>Manage your projects and file versions easily.</p>
 
-<a href="{{ url_for('auth.login') }}" class="btn">Login</a>
-<a href="{{ url_for('auth.register') }}" class="btn">Register</a>
+<section class="hero">
+    <div class="hero-inner">
+
+        <div class="hero-text">
+            <span class="hero-badge">Version control made simple</span>
+            <h1>Never lose a version of your work again</h1>
+            <p>
+                Upload your files, track every change, compare versions line by line,
+                and restore any earlier version in one click.
+            </p>
+
+            <div class="hero-actions">
+                {% if session.get("user_id") %}
+                <a class="btn btn-large" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+                {% else %}
+                <a class="btn btn-large" href="{{ url_for('auth.register') }}">Get Started</a>
+                <a class="btn btn-large btn-outline" href="{{ url_for('auth.login') }}">Login</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hero-preview">
+            <div class="preview-card">
+                <div class="preview-title">report.txt</div>
+
+                <div class="preview-row">
+                    <strong>Version 3</strong>
+                    <span class="badge-latest">Latest</span>
+                    <code>a3f9c21</code>
+                </div>
+                <div class="preview-row">
+                    <strong>Version 2</strong>
+                    <span class="tag">v1.0</span>
+                    <code>74ef874</code>
+                </div>
+                <div class="preview-row">
+                    <strong>Version 1</strong>
+                    <code>5c0d1be</code>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="section">
+    <h2>Everything you need to track your files</h2>
+    <p class="section-sub">Simple tools that work like the version control used by developers.</p>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>Full version history</h3>
+            <p>Every upload is saved as a new version. Nothing is ever overwritten.</p>
+        </div>
+        <div class="feature-card">
+            <h3>SHA-256 hashing</h3>
+            <p>Each version gets a unique ID, and unchanged uploads are detected automatically.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Version tags</h3>
+            <p>Label important versions such as "v1.0" so they are easy to find.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Colored comparison</h3>
+            <p>See exactly what changed between two versions. Added lines are green, removed lines are red.</p>
+        </div>
+        <div class="feature-card">
+            <h3>One-click restore</h3>
+            <p>Bring back an older version as a new one, with the full history preserved.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Private and organized</h3>
+            <p>Your projects stay yours, with a dashboard and recent activity to follow your work.</p>
+        </div>
+    </div>
+</section>
+
+<div class="band">
+    <section class="section">
+        <h2>How it works</h2>
+        <p class="section-sub">Three steps to get started.</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Create a project</h3>
+                <p>Organize your files into projects.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Upload your files</h3>
+                <p>Each upload creates a new version.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Compare and restore</h3>
+                <p>Review changes and go back anytime.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="cta">
+    {% if session.get("user_id") %}
+    <h2>Welcome back</h2>
+    <p>Pick up where you left off.</p>
+    <a class="btn btn-large" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+    {% else %}
+    <h2>Ready to take control of your files?</h2>
+    <p>Create a free account and start tracking versions today.</p>
+    <a class="btn btn-large" href="{{ url_for('auth.register') }}">Create Account</a>
+    {% endif %}
+</section>
+
 {% endblock %}
