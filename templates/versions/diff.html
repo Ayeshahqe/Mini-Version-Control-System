@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Compare Versions{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Compare Versions</h1>
+        <p class="page-sub">Showing diff between <span class="hash">Version {{ old_no }}</span> and <span
+                class="hash">Version {{ new_no }}</span></p>
+    </div>
+    <div class="inline-row">
+        <span class="pill-green">+{{ added }} additions</span>
+        <span class="pill-red">-{{ removed }} deletions</span>
+        <a class="btn btn-light btn-small" href="{{ url_for('version.history', file_id=file.id) }}">Back</a>
+    </div>
+</div>
+
+<div class="card code-card">
+    <div class="code-head"><span>{{ file.filename }}</span><span class="muted">Unified View</span></div>
+    {% if diff_lines %}
+    <div class="diff-box">
+        {% for css, o, n, sign, text in diff_lines %}
+        <div class="diff-row {{ css }}"><span class="ln">{{ o }}</span><span class="ln">{{ n }}</span><span
+                class="code-text">{{ sign }} {{ text }}</span></div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No differences found.</p>
+    {% endif %}
+</div>
+{% endblock %}

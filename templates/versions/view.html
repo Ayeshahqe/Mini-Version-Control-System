@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}View Version {{ version.version_number }}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">{{ file.filename }}</h1>
+        <p class="page-sub">Version {{ version.version_number }} &middot; {{ version.created_at.strftime('%Y-%m-%d
+            %H:%M') }}</p>
+    </div>
+    <div class="inline-row">
+        <a class="btn btn-light" href="{{ url_for('version.download_version', version_id=version.id) }}">Download</a>
+        <a class="btn btn-soft" href="{{ url_for('version.history', file_id=file.id) }}">Back to History</a>
+    </div>
+</div>
+
+<div class="card code-card">
+    <div class="code-head"><span>{{ file.filename }}</span><span class="muted">Version {{ version.version_number
+            }}</span></div>
+    <div class="diff-box">
+        {% for line in content.splitlines() %}
+        <div class="diff-row"><span class="ln">{{ loop.index }}</span><span class="code-text">{{ line }}</span></div>
+        {% else %}
+        <p class="empty">This file is empty.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

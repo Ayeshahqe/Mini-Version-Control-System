@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Compare{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Compare Versions</h1>
+        <p class="page-sub">Choose a file and two of its versions</p>
+    </div>
+</div>
+
+{% for item in items %}
+<div class="card compare-row">
+    <div>
+        <strong>{{ item.file.filename }}</strong>
+        <span class="muted">&nbsp; {{ item.numbers|length }} versions</span>
+    </div>
+    <form method="GET" action="{{ url_for('version.diff', file_id=item.file.id) }}" class="inline-row">
+        From
+        <select name="v1">
+            {% for n in item.numbers %}
+            <option value="{{ n }}" {% if loop.index==2 %}selected{% endif %}>Version {{ n }}</option>
+            {% endfor %}
+        </select>
+        to
+        <select name="v2">
+            {% for n in item.numbers %}
+            <option value="{{ n }}" {% if loop.first %}selected{% endif %}>Version {{ n }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-small">Compare</button>
+    </form>
+</div>
+{% else %}
+<div class="card empty">You need a text or code file with at least 2 versions to compare.</div>
+{% endfor %}
+{% endblock %}

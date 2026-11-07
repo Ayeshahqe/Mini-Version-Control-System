@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<form method="GET" action="{{ url_for('nav.compare_selected') }}">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Version History</h1>
+            <p class="page-sub">Track all snapshot revisions and SHA-256 hashes. Tick two versions of one file to
+                compare.</p>
+        </div>
+        <button type="submit" class="btn">Compare Selected Snapshots</button>
+    </div>
+
+    <div class="card table-card">
+        {% if rows %}
+        <table>
+            <tr>
+                <th>Select</th>
+                <th>File</th>
+                <th>SHA-256 Hash</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>View</th>
+            </tr>
+            {% for r in rows %}
+            <tr>
+                <td><input type="checkbox" name="sel" value="{{ r.file.id }}:{{ r.version.version_number }}"></td>
+                <td>
+                    <strong>{{ r.file.filename }}</strong>
+                    <div class="muted">Version {{ r.version.version_number }}{% if r.version.version_number == 1 %}
+                        &middot; Initial upload{% endif %}</div>
+                </td>
+                <td><span class="hash">{{ r.hash }}</span></td>
+                <td>{{ r.author }}</td>
+                <td>{{ r.version.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if r.can_view %}
+                    <a class="link" href="{{ url_for('version.view_version', version_id=r.version.id) }}">View</a>
+                    {% else %}
+                    <a class="link"
+                        href="{{ url_for('version.download_version', version_id=r.version.id) }}">Download</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="empty">No versions yet. Upload a file in a project first.</p>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

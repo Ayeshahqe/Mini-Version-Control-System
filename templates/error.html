@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Error</title>
-</head>
-<body>
-    <h1>{{ code }}</h1>
-    <p>{{ message }}</p>
-
-    <a href="/dashboard">Back to Dashboard</a>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="card auth-card" style="text-align:center">
+    <h1 class="hero-title grad-text" style="font-size:64px; margin:0 0 10px">{{ code }}</h1>
+    <p class="muted">{{ message }}</p>
+    <a href="{{ url_for('dashboard') }}" class="btn" style="margin-top:18px">Back to Dashboard</a>
+</div>
+{% endblock %}

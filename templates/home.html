@@ -1,123 +1,103 @@
 {% extends "base.html" %}
+{% block title %}Home{% endblock %}
 
-{% block title %}Mini Version Control System{% endblock %}
-
-{% block page_class %}landing{% endblock %}
+{% macro feature(title, text, cls, svg) %}
+<div class="card feature">
+    <span class="f-icon {{ cls }}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">{{ svg|safe }}</svg>
+    </span>
+    <h3>{{ title }}</h3>
+    <p>{{ text }}</p>
+</div>
+{% endmacro %}
 
 {% block content %}
-
 <section class="hero">
-    <div class="hero-inner">
-
-        <div class="hero-text">
-            <span class="hero-badge">Version control made simple</span>
-            <h1>Never lose a version of your work again</h1>
-            <p>
-                Upload your files, track every change, compare versions line by line,
-                and restore any earlier version in one click.
-            </p>
-
-            <div class="hero-actions">
-                {% if session.get("user_id") %}
-                <a class="btn btn-large" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
-                {% else %}
-                <a class="btn btn-large" href="{{ url_for('auth.register') }}">Get Started</a>
-                <a class="btn btn-large btn-outline" href="{{ url_for('auth.login') }}">Login</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="hero-preview">
-            <div class="preview-card">
-                <div class="preview-title">report.txt</div>
-
-                <div class="preview-row">
-                    <strong>Version 3</strong>
-                    <span class="badge-latest">Latest</span>
-                    <code>a3f9c21</code>
-                </div>
-                <div class="preview-row">
-                    <strong>Version 2</strong>
-                    <span class="tag">v1.0</span>
-                    <code>74ef874</code>
-                </div>
-                <div class="preview-row">
-                    <strong>Version 1</strong>
-                    <code>5c0d1be</code>
-                </div>
-            </div>
-        </div>
-
+    <span class="eyebrow"><i class="dot"></i> NEXT GEN FILE VERSION MANAGER</span>
+    <h1 class="hero-title grad-text">Version control, made simple</h1>
+    <p class="hero-sub">Upload, track and restore every version of your files. Visual diffs, SHA-256 fingerprints and a
+        complete history, designed for students and small dev teams.</p>
+    <div class="hero-actions">
+        <a class="btn btn-lg" href="{{ url_for('auth.register') }}">Get Started &rarr;</a>
+        <a class="btn btn-light btn-lg" href="{{ url_for('auth.login') }}">Login</a>
     </div>
 </section>
 
-<section class="section">
-    <h2>Everything you need to track your files</h2>
-    <p class="section-sub">Simple tools that work like the version control used by developers.</p>
-
-    <div class="feature-grid">
-        <div class="feature-card">
-            <h3>Full version history</h3>
-            <p>Every upload is saved as a new version. Nothing is ever overwritten.</p>
-        </div>
-        <div class="feature-card">
-            <h3>SHA-256 hashing</h3>
-            <p>Each version gets a unique ID, and unchanged uploads are detected automatically.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Version tags</h3>
-            <p>Label important versions such as "v1.0" so they are easy to find.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Colored comparison</h3>
-            <p>See exactly what changed between two versions. Added lines are green, removed lines are red.</p>
-        </div>
-        <div class="feature-card">
-            <h3>One-click restore</h3>
-            <p>Bring back an older version as a new one, with the full history preserved.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Private and organized</h3>
-            <p>Your projects stay yours, with a dashboard and recent activity to follow your work.</p>
+<section class="code-preview">
+    <div class="cp-bar"><i></i><i></i><i></i><span>app.py &middot; Version 2 &rarr; Version 3</span></div>
+    <div class="cp-body">
+        <div class="cp-row"><span class="cp-ln">1</span>from flask import Flask, jsonify</div>
+        <div class="cp-row cp-del"><span class="cp-ln">2</span>- DEBUG_MODE = True</div>
+        <div class="cp-row cp-add"><span class="cp-ln">2</span>+ app.config.from_object(load_environment())</div>
+        <div class="cp-row cp-add"><span class="cp-ln">3</span>+ def health_check(): return jsonify(status="healthy")
         </div>
     </div>
 </section>
 
-<div class="band">
-    <section class="section">
-        <h2>How it works</h2>
-        <p class="section-sub">Three steps to get started.</p>
-
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Create a project</h3>
-                <p>Organize your files into projects.</p>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Upload your files</h3>
-                <p>Each upload creates a new version.</p>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Compare and restore</h3>
-                <p>Review changes and go back anytime.</p>
-            </div>
-        </div>
-    </section>
+<div class="section-head center">
+    <div>
+        <h2 class="big-h">Everything you need to track your files</h2>
+        <p class="muted">Core version control features, built from scratch.</p>
+    </div>
 </div>
 
-<section class="cta">
-    {% if session.get("user_id") %}
-    <h2>Welcome back</h2>
-    <p>Pick up where you left off.</p>
-    <a class="btn btn-large" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
-    {% else %}
-    <h2>Ready to take control of your files?</h2>
-    <p>Create a free account and start tracking versions today.</p>
-    <a class="btn btn-large" href="{{ url_for('auth.register') }}">Create Account</a>
-    {% endif %}
-</section>
+<div class="grid-3">
+    {{ feature("Version History", "Every upload becomes a numbered version with its date and time. Nothing is ever
+    overwritten.", "c1",
+    '
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />') }}
+    {{ feature("Visual Diffs", "Compare any two versions line by line, with additions and deletions highlighted.", "c2",
+    '
+    <path d="M17 1l4 4-4 4" />
+    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+    <path d="M7 23l-4-4 4-4" />
+    <path d="M21 13v2a4 4 0 0 1-4 4H3" />') }}
+    {{ feature("SHA-256 Security", "Every snapshot has a cryptographic fingerprint. Identical uploads are detected and
+    rejected.", "c3",
+    '
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />') }}
+    {{ feature("Safe Restore", "Restore any old version in one click. It becomes a new version, so history is never
+    lost.", "c1",
+    '
+    <path d="M1 4v6h6" />
+    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />') }}
+    {{ feature("View Code", "Read the code of any version in the browser with line numbers, without downloading it.",
+    "c2",
+    '
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />') }}
+    {{ feature("Project ZIP Export", "Download the latest version of every file in a project as one ZIP archive.", "c3",
+    '
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />') }}
+</div>
 
+<div class="section-head center">
+    <div>
+        <h2 class="big-h">How it works</h2>
+    </div>
+</div>
+<div class="grid-3">
+    <div class="card step"><span class="step-no">1</span>
+        <h3>Create a project</h3>
+        <p>Register, log in and create a project to hold your files.</p>
+    </div>
+    <div class="card step"><span class="step-no">2</span>
+        <h3>Upload and update</h3>
+        <p>Upload a file, then upload changed versions. Each one is saved as V1, V2, V3.</p>
+    </div>
+    <div class="card step"><span class="step-no">3</span>
+        <h3>Compare and restore</h3>
+        <p>See what changed, download any version, or restore an older one.</p>
+    </div>
+</div>
+
+<section class="cta card">
+    <h2 class="big-h">Ready to start tracking?</h2>
+    <p class="muted">Create a free account and upload your first file in under a minute.</p>
+    <a class="btn btn-lg" href="{{ url_for('auth.register') }}">Create Account</a>
+</section>
 {% endblock %}

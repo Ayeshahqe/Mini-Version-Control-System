@@ -1,128 +1,182 @@
+import io
 import os
+import shutil
+import zipfile
 
-from flask import (
-    Blueprint,
-    abort,
-    current_app,
-    flash,
-    redirect,
-    send_from_directory,
-    session,
-    url_for,
-)
+from flask import (Blueprint, render_template, request, redirect, url_for,
+                   flash, send_file)
+from werkzeug.utils import secure_filename
 
 from models.models import db, Project, File, Version
-from routes import log_activity
+from file_routes.version import (login_required, get_upload_root, resolve_path,
+                                 get_owned_project_for_files, log_activity,
+                                 check_upload, create_version)
 
-file_bp = Blueprint("files", __name__, url_prefix="/projects")
+file_bp = Blueprint("file", __name__)
+
+ALLOWED_EXTENSIONS = {
+    "txt", "md", "py", "java", "c", "cpp", "h",
+    "js", "html", "css", "json", "csv", "sql",
+    "xml", "pdf", "docx", "pptx", "xlsx",
+    "png", "jpg", "jpeg", "gif", "zip",
+}
+
+
+def allowed_file(filename):
+    if "." not in filename:
+        return False
+    return filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_owned_project(project_id):
-    project = db.session.get(Project, project_id)
-
-    if project is None:
-        abort(404)
-
-    if project.user_id != session["user_id"]:
-        abort(403)
-
-    return project
+    return get_owned_project_for_files(project_id)
 
 
-def get_version_folder(project_id, file_id):
-    return os.path.join(
-        current_app.root_path,
-        "uploads",
-        str(project_id),
-        str(file_id),
-    )
+def get_owned_file(file_id):
+    file = File.query.get_or_404(file_id)
+    get_owned_project(file.project_id)
+    return file
 
 
-@file_bp.route("/<int:project_id>/files/<int:file_id>/download")
-def download_file(project_id, file_id):
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
+def latest_of(file_id):
+    return (Version.query.filter_by(file_id=file_id)
+            .order_by(Version.version_number.desc()).first())
 
+
+# ---------- Routes ----------
+
+@file_bp.route("/projects/<int:project_id>/files")
+@login_required
+def list_files(project_id):
+    project = get_owned_project(project_id)
+    files = File.query.filter_by(
+        project_id=project.id).order_by(File.filename).all()
+    rows = [{"file": f, "latest": latest_of(f.id)} for f in files]
+    return render_template("files/files.html", project=project, rows=rows)
+
+
+@file_bp.route("/projects/<int:project_id>/upload", methods=["GET", "POST"])
+@login_required
+def upload_file(project_id):
     project = get_owned_project(project_id)
 
-    file_record = File.query.filter_by(
-        id=file_id,
-        project_id=project.id,
-    ).first_or_404()
+    if request.method == "POST":
+        uploaded = request.files.get("file")
 
-    latest_version = (
-        Version.query
-        .filter_by(file_id=file_record.id)
-        .order_by(Version.version_number.desc())
-        .first()
-    )
+        # 1. Valid upload (selected, not empty, max 20 KB)
+        error = check_upload(uploaded)
+        if error:
+            flash(error, "error")
+            return redirect(request.url)
 
-    if latest_version is None:
-        abort(404)
+        # 2. Clean the filename
+        safe_name = secure_filename(uploaded.filename)
+        if safe_name == "":
+            flash("Invalid filename. Please rename the file and try again.", "error")
+            return redirect(request.url)
 
-    full_path = os.path.join(current_app.root_path, latest_version.file_path)
+        # 3. Allowed type
+        if not allowed_file(safe_name):
+            flash("This file type is not allowed.", "error")
+            return redirect(request.url)
 
-    if not os.path.isfile(full_path):
-        flash("The stored file could not be found.", "error")
-        return redirect(url_for("auth.project", project_id=project.id))
+        # 4. Duplicate filename in this project
+        if File.query.filter_by(project_id=project.id, filename=safe_name).first():
+            flash("File already exists. Upload a new version from its history page.",
+                  "error")
+            return redirect(request.url)
 
-    return send_from_directory(
-        os.path.dirname(full_path),
-        os.path.basename(full_path),
-        as_attachment=True,
-        download_name=file_record.filename,
-    )
-
-
-@file_bp.route("/<int:project_id>/files/<int:file_id>/delete", methods=["POST"])
-def delete_file(project_id, file_id):
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
-
-    project = get_owned_project(project_id)
-
-    file_record = File.query.filter_by(
-        id=file_id,
-        project_id=project.id,
-    ).first_or_404()
-
-    filename = file_record.filename
-    versions = Version.query.filter_by(file_id=file_record.id).all()
-
-    version_paths = [
-        os.path.join(current_app.root_path, version.file_path)
-        for version in versions
-        if version.file_path
-    ]
-
-    folder = get_version_folder(project.id, file_record.id)
-
-    try:
-        for version in versions:
-            db.session.delete(version)
-
-        db.session.delete(file_record)
+        # 5. Create the File record, then Version 1
+        new_file = File(filename=safe_name, project_id=project.id)
+        db.session.add(new_file)
         db.session.commit()
 
+        try:
+            create_version(new_file, uploaded=uploaded)
+        except Exception:
+            db.session.rollback()
+            db.session.delete(new_file)
+            db.session.commit()
+            flash("Could not save the file. Please try again.", "error")
+            return redirect(request.url)
+
+        log_activity("Upload", 'Uploaded "%s" (version 1) to "%s"'
+                     % (safe_name, project.name))
+        flash("'%s' uploaded successfully. Version 1 created." %
+              safe_name, "success")
+        return redirect(url_for("file.list_files", project_id=project.id))
+
+    return render_template("files/upload.html", project=project)
+
+
+@file_bp.route("/files/<int:file_id>/download")
+@login_required
+def download_file(file_id):
+    file = get_owned_file(file_id)
+    latest = latest_of(file.id)
+
+    if latest is None or not os.path.exists(resolve_path(latest.file_path)):
+        flash("The file is missing on the server.", "error")
+        return redirect(url_for("file.list_files", project_id=file.project_id))
+
+    return send_file(resolve_path(latest.file_path), as_attachment=True,
+                     download_name=file.filename)
+
+
+@file_bp.route("/files/<int:file_id>/delete", methods=["POST"])
+@login_required
+def delete_file(file_id):
+    file = get_owned_file(file_id)
+    project_id = file.project_id
+    filename = file.filename
+
+    version_folder = os.path.join(
+        get_upload_root(), str(project_id), str(file.id))
+    version_paths = [resolve_path(v.file_path)
+                     for v in Version.query.filter_by(file_id=file.id).all()]
+
+    try:
+        Version.query.filter_by(file_id=file.id).delete()
+        db.session.delete(file)
+        db.session.commit()
     except Exception:
         db.session.rollback()
         flash("Could not delete the file. Please try again.", "error")
-        return redirect(url_for("auth.project", project_id=project.id))
-
-    log_activity("Delete", f'Deleted file "{filename}" from "{project.name}"')
+        return redirect(url_for("file.list_files", project_id=project_id))
 
     for path in version_paths:
         try:
-            if os.path.isfile(path):
+            if os.path.exists(path):
                 os.remove(path)
         except OSError:
-            current_app.logger.warning("Could not remove %s", path)
+            pass
+    shutil.rmtree(version_folder, ignore_errors=True)
 
-    try:
-        if os.path.isdir(folder) and not os.listdir(folder):
-            os.rmdir(folder)
-    except OSError:
-        pass
+    log_activity("Delete", 'Deleted file "%s"' % filename)
+    flash("File '%s' deleted." % filename, "success")
+    return redirect(url_for("file.list_files", project_id=project_id))
 
-    flash(f'"{filename}" and its version history were deleted.', "success")
-    return redirect(url_for("auth.project", project_id=project.id))
+
+@file_bp.route("/projects/<int:project_id>/download-zip")
+@login_required
+def download_project_zip(project_id):
+    project = get_owned_project(project_id)
+    files = File.query.filter_by(project_id=project.id).all()
+
+    if not files:
+        flash("This project has no files to download.", "error")
+        return redirect(url_for("file.list_files", project_id=project.id))
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in files:
+            latest = latest_of(f.id)
+            if latest is not None:
+                path = resolve_path(latest.file_path)
+                if os.path.exists(path):
+                    zf.write(path, arcname=f.filename)
+    buffer.seek(0)
+
+    zip_name = (secure_filename(project.name) or "project") + ".zip"
+    return send_file(buffer, as_attachment=True,
+                     download_name=zip_name, mimetype="application/zip")

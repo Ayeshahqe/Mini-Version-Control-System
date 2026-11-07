@@ -1,64 +1,82 @@
 {% extends "base.html" %}
-
-{% block title %}Dashboard - MVCS{% endblock %}
-
+{% block title %}Dashboard{% endblock %}
 {% block content %}
-
-<div class="page-header">
+<div class="page-head">
     <div>
-        <h1>Welcome, {{ user.name|title }}</h1>
-        <p>Here is an overview of your work.</p>
+        <h1 class="page-title">Developer Dashboard</h1>
+        <p class="page-sub">Welcome back, {{ user.name }}. Overview of your projects, files and activity.</p>
     </div>
     <a class="btn" href="{{ url_for('auth.create_project') }}">+ Create Project</a>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-number">{{ total_projects }}</div>
-        <div class="stat-label">Projects</div>
+<div class="grid-4">
+    <div class="card">
+        <div class="stat-label">Total Projects</div>
+        <div class="stat-num">{{ stats.projects }}</div>
+        <div class="stat-note">Owned by you</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ total_files }}</div>
-        <div class="stat-label">Files</div>
+    <div class="card">
+        <div class="stat-label">Total Files</div>
+        <div class="stat-num">{{ stats.files }}</div>
+        <div class="stat-note">Across all projects</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ total_versions }}</div>
-        <div class="stat-label">Versions</div>
+    <div class="card">
+        <div class="stat-label">Versions Saved</div>
+        <div class="stat-num">{{ stats.versions }}</div>
+        <div class="stat-note">Nothing is ever overwritten</div>
+    </div>
+    <div class="card">
+        <div class="stat-label">Storage Used</div>
+        <div class="stat-num">{{ stats.storage }}</div>
+        <div class="stat-note">All version files</div>
     </div>
 </div>
 
-<h2>Your Projects</h2>
-
-{% if projects %}
-<div class="project-grid">
-    {% for project in projects %}
-    <div class="project-card">
-        <h3>{{ project.name }}</h3>
-        <p>{{ project.files|length }} file(s)</p>
-        <a class="btn" href="{{ url_for('auth.project', project_id=project.id) }}">Open Project</a>
+<div class="dash-layout">
+    <div>
+        <div class="section-head" style="margin-top:8px">
+            <h2>Recent Projects</h2>
+            <a class="link" href="{{ url_for('nav.projects') }}">View All</a>
+        </div>
+        <div class="grid-2">
+            <a class="card project-card new" href="{{ url_for('auth.create_project') }}">
+                <div>
+                    <div class="plus-circle">+</div>
+                    <strong>New Project</strong>
+                    <div class="muted">Initialize repository</div>
+                </div>
+            </a>
+            {% for c in stats.cards[:5] %}
+            <a class="card project-card" href="{{ url_for('file.list_files', project_id=c.id) }}">
+                <div class="pc-top">
+                    <div class="project-icon">{{ c.name[:1]|upper }}</div>
+                    <span class="status">Active</span>
+                </div>
+                <h3>{{ c.name }}</h3>
+                <p class="muted">{{ c.files }} file{{ '' if c.files == 1 else 's' }} &middot; {{ c.versions }} version{{
+                    '' if c.versions == 1 else 's' }}</p>
+                <div class="pc-foot"><span class="muted">Updated {{ c.updated }}</span></div>
+            </a>
+            {% endfor %}
+        </div>
     </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="card">
-    <p>No projects yet. Click "+ Create Project" to start.</p>
-</div>
-{% endif %}
 
-<h2>Recent Activity</h2>
-
-<div class="card">
-    {% if activities %}
-    {% for a in activities %}
-    <div class="timeline-item">
-        <span class="timeline-badge {{ a.action|lower }}">{{ a.action }}</span>
-        <span class="timeline-text">{{ a.description }}</span>
-        <span class="timeline-time">{{ a.created_at.strftime("%d %b, %H:%M") }}</span>
-    </div>
-    {% endfor %}
-    {% else %}
-    <p>No activity yet.</p>
-    {% endif %}
+    <aside class="card activity">
+        <h2>Recent Activity</h2>
+        {% if stats.activity %}
+        <ul class="timeline">
+            {% for a in stats.activity %}
+            <li>
+                <i class="t-dot"></i>
+                <div><strong>{{ a.text }}</strong>
+                    <div class="muted small">{{ a.sub }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">No activity yet. Upload a file to get started.</p>
+        {% endif %}
+    </aside>
 </div>
-
 {% endblock %}

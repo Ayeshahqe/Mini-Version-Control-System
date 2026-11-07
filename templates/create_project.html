@@ -1,26 +1,13 @@
 {% extends "base.html" %}
-
-{% block title %}Create Project - MVCS{% endblock %}
-
+{% block title %}Create Project{% endblock %}
 {% block content %}
-
-<div class="page-header">
-    <div>
-        <h1>Create Project</h1>
-        <p>A project holds your files and all their versions.</p>
-    </div>
-</div>
-
-<div class="card form-card">
+<div class="card auth-card">
+    <h2 class="auth-title">Create New Project</h2>
+    <p class="auth-sub">Give your project a name</p>
     <form method="POST">
         <label for="name">Project name</label>
-        <input type="text" name="name" id="name" placeholder="e.g. Final Report" maxlength="100" required>
-
-        <div class="actions">
-            <button type="submit">Create Project</button>
-            <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Cancel</a>
-        </div>
+        <input type="text" id="name" name="name" required>
+        <button type="submit" class="btn btn-block">Create Project</button>
     </form>
 </div>
-
 {% endblock %}

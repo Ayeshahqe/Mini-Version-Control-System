@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Projects{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">My Projects</h1>
+        <p class="page-sub">Open a project to manage its files</p>
+    </div>
+    <a class="btn" href="{{ url_for('auth.create_project') }}">+ Create Project</a>
+</div>
+<div class="grid-3">
+    {% for c in cards %}
+    <a class="card project-card" href="{{ url_for('file.list_files', project_id=c.id) }}">
+        <div class="project-icon">{{ c.name[:1]|upper }}</div>
+        <h3>{{ c.name }}</h3>
+        <p class="muted">{{ c.files }} file{{ '' if c.files == 1 else 's' }}</p>
+    </a>
+    {% else %}
+    <div class="card empty">You have no projects yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}

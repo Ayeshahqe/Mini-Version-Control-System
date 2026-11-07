@@ -1,32 +1,24 @@
 {% extends "base.html" %}
-
-{% block title %}Register - MVCS{% endblock %}
-
-{% block page_class %}auth-page{% endblock %}
-
+{% block title %}Register{% endblock %}
 {% block content %}
-
-<div class="auth-card">
-    <h1>Create your account</h1>
-    <p class="auth-sub">Start tracking your file versions in minutes.</p>
-    <p class="auth-switch"><a href="{{ url_for('home') }}">&larr; Back to home</a></p>
-
+<div class="card auth-card">
+    <div class="tabs">
+        <a class="tab" href="{{ url_for('auth.login') }}">Log In</a>
+        <a class="tab active" href="{{ url_for('auth.register') }}">Register</a>
+    </div>
+    <h2 class="auth-title">Create Account</h2>
+    <p class="auth-sub">Start tracking your file versions</p>
     <form method="POST">
         <label for="name">Name</label>
-        <input type="text" name="name" id="name" required>
+        <input type="text" id="name" name="name" placeholder="Alex Morgan" required>
 
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" required>
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="alex@company.com" required>
 
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" required>
+        <input type="password" id="password" name="password" required>
 
-        <button type="submit">Register</button>
+        <button type="submit" class="btn btn-block">Create Account</button>
     </form>
-
-    <p class="auth-switch">
-        Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
-    </p>
 </div>
-
 {% endblock %}

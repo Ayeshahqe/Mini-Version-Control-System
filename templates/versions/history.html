@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Version History{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title"><span class="tag">File</span>{{ file.filename }}</h1>
+        <p class="page-sub">Version history</p>
+    </div>
+    <div class="inline-row">
+        <a class="btn" href="{{ url_for('version.upload_version', file_id=file.id) }}">+ Upload New Version</a>
+        <a class="btn btn-light" href="{{ url_for('file.list_files', project_id=file.project_id) }}">Back to Files</a>
+    </div>
+</div>
+
+{% if can_view and versions|length > 1 %}
+<div class="card compare-row">
+    <strong>Compare two versions</strong>
+    <form method="GET" action="{{ url_for('version.diff', file_id=file.id) }}" class="inline-row">
+        From
+        <select name="v1">
+            {% for v in versions %}<option value="{{ v.version_number }}" {% if loop.index==2 %}selected{% endif %}>
+                Version {{ v.version_number }}</option>{% endfor %}
+        </select>
+        to
+        <select name="v2">
+            {% for v in versions %}<option value="{{ v.version_number }}" {% if loop.first %}selected{% endif %}>Version
+                {{ v.version_number }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-small">Compare</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="card table-card">
+    {% if versions %}
+    <table>
+        <tr>
+            <th>Version</th>
+            <th>Tag</th>
+            <th>Date / Time</th>
+            <th class="actions">Actions</th>
+        </tr>
+        {% for v in versions %}
+        <tr>
+            <td><strong>Version {{ v.version_number }}</strong> {% if loop.first %}<span class="badge">Latest</span>{%
+                endif %}</td>
+            <td>
+                <form class="inline-form" method="POST" action="{{ url_for('version.tag_version', version_id=v.id) }}">
+                    <input type="text" name="tag" class="tag-input" value="{{ v.tag or '' }}" placeholder="Add tag"
+                        maxlength="30">
+                    <button type="submit" class="btn btn-small btn-soft">Save</button>
+                </form>
+            </td>
+            <td>{{ v.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="actions">
+                {% if can_view %}<a class="btn btn-small btn-soft"
+                    href="{{ url_for('version.view_version', version_id=v.id) }}">View</a>{% endif %}
+                <a class="btn btn-small btn-light"
+                    href="{{ url_for('version.download_version', version_id=v.id) }}">Download</a>
+                <form class="inline-form" method="POST"
+                    action="{{ url_for('version.restore_version', version_id=v.id) }}"
+                    onsubmit="return confirm('Restore Version {{ v.version_number }} as a new version?');">
+                    <button type="submit" class="btn btn-small">Restore</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="empty">No versions found for this file.</p>
+    {% endif %}
+</div>
+{% endblock %}

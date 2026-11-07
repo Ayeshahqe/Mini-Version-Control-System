@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1 class="page-title"><span class="tag">Repository</span>{{ project.name }}</h1>
+        <p class="page-sub">{{ rows|length }} file{{ '' if rows|length == 1 else 's' }}</p>
+    </div>
+    <div class="inline-row">
+        <a class="btn btn-light" href="{{ url_for('nav.history_all') }}">History</a>
+        <a class="btn btn-soft" href="{{ url_for('nav.compare_page') }}">Compare</a>
+        <a class="btn btn-light" href="{{ url_for('file.download_project_zip', project_id=project.id) }}">Download
+            ZIP</a>
+
+        <form class="inline-form" method="POST" action="{{ url_for('auth.delete_project', project_id=project.id) }}"
+            onsubmit="return confirm('Delete this project and ALL its files and versions? This cannot be undone.');">
+            <button type="submit" class="btn btn-danger">Delete Project</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:16px">Upload File Snapshot</h3>
+    <form method="POST" action="{{ url_for('file.upload_file', project_id=project.id) }}" enctype="multipart/form-data">
+        <div class="dropzone">
+            <input type="file" name="file" onchange="this.form.submit()">
+            <span class="dz-icon">&#8679;</span>
+            <strong>Drag &amp; drop a file here, or <u>browse</u></strong>
+            <small>Supports .py, .js, .json, .html, .css, .txt and more (Max 20 KB)</small>
+        </div>
+    </form>
+</div>
+
+<div class="card table-card">
+    <div style="padding:20px 22px">
+        <h3 style="display:inline">Project Files</h3> <span class="muted" style="float:right">{{ rows|length }}
+            items</span>
+    </div>
+    {% if rows %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Last Modified</th>
+            <th class="actions">Actions</th>
+        </tr>
+        {% for r in rows %}
+        <tr>
+            <td>
+                <div class="file-name"><span class="file-icon">&lt;/&gt;</span> {{ r.file.filename }}</div>
+            </td>
+            <td>{% if r.latest %}<span class="badge">v{{ r.latest.version_number }}</span>{% else %}-{% endif %}</td>
+            <td>{% if r.latest %}{{ r.latest.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}-{% endif %}</td>
+            <td class="actions">
+                <a class="btn btn-small btn-soft"
+                    href="{{ url_for('version.history', file_id=r.file.id) }}">Versions</a>
+                <a class="btn btn-small btn-light"
+                    href="{{ url_for('file.download_file', file_id=r.file.id) }}">Download</a>
+                <form class="inline-form" method="POST" action="{{ url_for('file.delete_file', file_id=r.file.id) }}"
+                    onsubmit="return confirm('Delete this file and all its versions?');">
+                    <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="empty">No files uploaded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
