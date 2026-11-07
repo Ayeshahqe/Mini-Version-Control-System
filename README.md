@@ -1,6 +1,6 @@
 # Mini Version Control System (MVCS)
 
-A web-based application built with Python and Flask that lets users upload files, keep every version, compare changes, tag important versions, and restore earlier versions. It is a simplified, beginner-friendly version control system inspired by the core ideas of Git.
+A web-based application built with Python and Flask that lets users upload files, keep every version, compare changes, tag important versions, view code in the browser, and restore earlier versions. It is a simplified, beginner-friendly version control system inspired by the core ideas of Git.
 
 ---
 
@@ -18,6 +18,7 @@ Managing multiple versions of files manually leads to confusion, accidental over
 - Let users tag important versions (for example, "v1.0")
 - Restore older versions without losing newer ones
 - Compare two versions of a text file with colored differences
+- Let users read the code of any version in the browser
 - Show an overview of the user's work and recent activity
 - Protect each user's projects and files from other users
 
@@ -28,6 +29,7 @@ Managing multiple versions of files manually leads to confusion, accidental over
 | Backend | Python, Flask |
 | Database | MySQL, Flask-SQLAlchemy |
 | Frontend | HTML, CSS (Jinja2 templates) |
+| Python libraries | `hashlib`, `difflib`, `zipfile` (standard library) |
 | Tools | Git, GitHub |
 
 ## 4. Features
@@ -35,35 +37,43 @@ Managing multiple versions of files manually leads to confusion, accidental over
 | Feature | Description |
 |---|---|
 | Authentication | Register, log in, and log out with hashed passwords |
-| Dashboard | Shows total projects, files, and versions, plus a card for each project |
-| Recent activity | Lists the latest uploads, restores, tags, and deletions with date and time |
+| Navigation bar | Home, Dashboard, Project, History, Compare, View Code, Login / Get Started (Logout when signed in) |
+| Dashboard | Total projects, files, versions, and storage used, plus a card for each project |
+| Recent activity | Latest uploads, restores, tags, and deletions with time |
 | Projects | Create, open, and delete your own projects |
-| File upload | Upload files with type, size (maximum 200 KB), and filename validation |
+| File upload | Type, size (maximum 100 KB), empty-file, and filename validation |
+| Executable blocking | `.exe`, `.bat`, `.msi`, `.sh` and similar files are rejected |
 | Version control | Every upload creates a new version instead of overwriting |
-| Content hashing | Each version gets a SHA-256 hash, shown as a short ID such as `a3f9c21` |
-| Duplicate detection | Uploading content identical to the latest version is rejected with "No changes found" |
+| Content hashing | Each version has a SHA-256 hash, shown as a short ID in History |
+| Duplicate detection | Content identical to the latest version is rejected with "No changes found" |
 | Version tags | Label a version (for example "v1.0"); a tag name can be used once per file |
-| Version history | Every version shown in its own box with ID, date, and a "Latest" badge |
+| File version history | All versions of one file with tag, date, and a "Latest" badge |
+| All-versions History page | Every version of every file with hash, author, and date |
 | Restore | Restoring an old version creates a new version with the old content (with confirmation) |
-| Compare versions | Added lines in **green**, removed lines in **red** |
-| Download | Download any version, or the latest version from the project page |
+| Compare versions | Added lines in green, removed lines in red, with line numbers and totals |
+| Compare page | Pick a file and two versions, or tick two snapshots in History |
+| View Code | Read any text or code version in the browser with line numbers |
+| Download | Download any version, the latest version of a file, or a whole project as a ZIP |
 | File deletion | Delete a file and all its versions (with confirmation) |
-| Notifications | Clear green success and red error messages |
+| Notifications | Green success and red error messages |
 | Access control | Users can only access their own projects and files |
 
 ## 5. How It Works
 
-1. When a file is uploaded, the system calculates its **SHA-256 hash**.
-2. If the hash matches the latest version, nothing has changed, so no new version is created.
-3. Otherwise a new version is saved next to the older ones, and the hash becomes its short ID.
-4. Restoring an old version copies its content into a new version. The new version has the same ID as the old one, which proves the content is identical.
+1. When a file is uploaded, the system checks its type, size, and name.
+2. The system calculates its **SHA-256 hash**.
+3. If the hash matches the latest version, nothing has changed, so no new version is created.
+4. Otherwise a new version is saved next to the older ones. Old versions are never overwritten.
+5. Restoring an old version copies its content into a new version. The new version has the same hash as the old one, which proves the content is identical.
+6. Every page checks that the user is logged in and owns the project.
 
 ## 6. User Interface
 
-- **Black sidebar:** Dashboard and Logout
-- **White workspace:** the actual page content
-- **Red accents:** buttons, active navigation item, and important actions
-- **Responsive design:** on small screens the sidebar becomes a compact top navigation bar
+- **Top navigation bar:** pill-style menu with the active page highlighted
+- **Light theme:** white cards on a soft background
+- **Indigo-to-pink gradient:** buttons, logo, badges, and headings
+- **Pages:** hero home page, dashboard with statistics and activity, tables for files and history, and a code viewer with a diff view
+- **Responsive design:** grids and the navigation bar adjust to smaller screens
 
 ## 7. Database Design
 
@@ -81,30 +91,40 @@ Relationships: **User → Projects → Files → Versions** (one-to-many at each
 
 ```text
 Mini-Version-Control-System/
-├── app.py                  # App setup, dashboard, error pages
-├── routes.py               # Auth, projects, versions, tags, compare, restore
+├── app.py                    # App setup, home, dashboard, error pages
+├── routes.py                 # Register, login, logout, create and delete project
 ├── models/
-│   └── models.py           # Database models
+│   └── models.py             # Database models
 ├── file_routes/
 │   ├── __init__.py
-│   └── file_management.py  # File download and delete
+│   ├── file_management.py    # Project files, upload, download, delete, ZIP
+│   ├── version.py            # Versions, hash check, tags, restore, view, compare
+│   └── nav.py                # Projects, History, Compare, View Code pages and dashboard data
 ├── templates/
-│   ├── base.html           # Sidebar layout shared by all pages
+│   ├── base.html             # Navigation bar and layout shared by all pages
 │   ├── home.html
 │   ├── login.html
 │   ├── register.html
 │   ├── dashboard.html
 │   ├── create_project.html
-│   ├── project.html
-│   ├── upload.html
-│   ├── new_version.html
-│   ├── file_history.html
-│   ├── compare_versions.html
-│   └── error.html
+│   ├── error.html
+│   ├── nav/
+│   │   ├── projects.html
+│   │   ├── history.html
+│   │   ├── compare.html
+│   │   └── code.html
+│   ├── files/
+│   │   ├── files.html
+│   │   └── upload.html
+│   └── versions/
+│       ├── history.html
+│       ├── upload_version.html
+│       ├── view.html
+│       └── diff.html
 ├── static/
 │   └── css/
-│       └── style.css       # Black, white, and red theme
-├── uploads/                # Stored file versions
+│       └── style.css         # Light theme with indigo-pink gradient
+├── uploads/                  # Stored file versions
 ├── requirements.txt
 ├── TEST_CASES.md
 └── README.md
@@ -155,21 +175,25 @@ Mini-Version-Control-System/
 1. Register an account and log in.
 2. Create a project from the Dashboard.
 3. Open the project and upload a file (creates **Version 1**).
-4. Open **Version History** and upload a new version (same filename required).
+4. Click **Versions** on a file, then upload a new version (same file type required).
 5. Add a tag such as `v1.0` to an important version.
-6. Use **Compare Versions** to see added and removed lines.
-7. Use **Restore** to bring back an older version as a new version.
-8. Check the Dashboard for statistics and recent activity.
+6. Use **Compare** to see added and removed lines.
+7. Use **View Code** to read a version in the browser.
+8. Use **Restore** to bring back an older version as a new version.
+9. Use **History** to see every version of every file with its hash.
+10. Use **Download ZIP** on a project page to get the latest version of all files.
+11. Check the Dashboard for statistics and recent activity.
 
 ## 11. Testing
 
-All test cases are listed in [TEST_CASES.md](TEST_CASES.md). They cover authentication, projects, files, versions, tags, comparison, dashboard, interface, and security.
+All test cases are listed in [TEST_CASES.md](TEST_CASES.md). They cover authentication, projects, files, versions, tags, comparison, code viewing, navigation, dashboard, interface, and security.
 
 ## 12. Limitations
 
-- Version comparison works only for text files
-- New versions must have the same filename as the original file
-- Maximum upload size is 200 KB
+- Version comparison and code viewing work only for text and code files
+- New versions must have the same file type as the original file
+- Maximum upload size is 100 KB
+- Executable files are blocked by extension only, not by content
 - Educational project, not a production-grade version control platform
 - Requires a local MySQL database to run
 
@@ -179,6 +203,7 @@ All test cases are listed in [TEST_CASES.md](TEST_CASES.md). They cover authenti
 - Snapshot comparison (added, modified, and removed files)
 - Search and filter for projects and files
 - Version messages (a note describing each change)
+- Multiple users per project
 - Automated tests
 - Side-by-side comparison view
 
