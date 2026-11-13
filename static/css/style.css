@@ -38,8 +38,8 @@ body::before {
     inset: 0;
     z-index: -1;
     background:
-        radial-gradient(600px 400px at 8% 10%, rgba(99, 102, 241, 0.12), transparent 70%),
-        radial-gradient(600px 400px at 92% 60%, rgba(236, 72, 153, 0.10), transparent 70%);
+        radial-gradient(600px 400px at 8% 10%, rgba(99, 102, 241, 0.22), transparent 70%),
+        radial-gradient(600px 400px at 92% 60%, rgba(236, 72, 153, 0.20), transparent 70%);
 }
 
 a {
@@ -62,7 +62,7 @@ h3 {
 }
 
 
-/* ========== 2. NAVBAR ========== */
+/* == NAVBAR == */
 .navbar {
     position: sticky;
     top: 0;
@@ -137,7 +137,7 @@ h3 {
 }
 
 
-/* ========== 3. LAYOUT ========== */
+/* == LAYOUT == */
 .container {
     max-width: 1280px;
     margin: 0 auto;
@@ -259,7 +259,7 @@ h3 {
 }
 
 
-/* ========== 4. BUTTONS ========== */
+/* == BUTTONS == */
 .btn {
     display: inline-block;
     padding: 12px 22px;
@@ -314,7 +314,7 @@ h3 {
 }
 
 
-/* ========== 5. FORMS AND UPLOAD BOX ========== */
+/* == FORMS AND UPLOAD BOX == */
 label {
     display: block;
     margin: 18px 0 8px;
@@ -382,7 +382,7 @@ select:focus {
 }
 
 
-/* ========== 6. TABLES ========== */
+/* == TABLES == */
 .table-card {
     padding: 0;
     overflow-x: auto;
@@ -441,7 +441,7 @@ th.actions {
 }
 
 
-/* ========== 7. BADGES AND TAGS ========== */
+/* == BADGES AND TAGS == */
 .badge {
     display: inline-block;
     background: var(--grad);
@@ -500,7 +500,7 @@ th.actions {
 }
 
 
-/* ========== 8. FLASH MESSAGES ========== */
+/* == FLASH MESSAGES == */
 .flash {
     padding: 14px 18px;
     border-radius: 14px;
@@ -522,7 +522,7 @@ th.actions {
 }
 
 
-/* ========== 9. LOGIN AND REGISTER ========== */
+/* == LOGIN AND REGISTER == */
 .auth-card {
     max-width: 480px;
     margin: 20px auto;
@@ -568,7 +568,7 @@ th.actions {
 }
 
 
-/* ========== 10. HOME PAGE ========== */
+/* == HOME PAGE == */
 .hero {
     text-align: center;
     padding: 90px 10px 50px;
@@ -773,7 +773,7 @@ th.actions {
 }
 
 
-/* ========== 11. DASHBOARD ========== */
+/* == DASHBOARD == */
 .stat-label {
     font-size: 12px;
     font-weight: 700;
@@ -923,7 +923,7 @@ th.actions {
 }
 
 
-/* ========== 12. CODE VIEWER AND DIFF ========== */
+/* == CODE VIEWER AND DIFF == */
 .code-card {
     padding: 0;
     overflow: hidden;
@@ -983,7 +983,7 @@ th.actions {
 }
 
 
-/* ========== 13. RESPONSIVE ========== */
+/* == RESPONSIVE == */
 @media (max-width: 1000px) {
     .dash-layout {
         grid-template-columns: 1fr;

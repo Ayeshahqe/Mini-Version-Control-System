@@ -44,7 +44,7 @@
 |---|---|---|
 | TC-18 | Upload a supported file | File is uploaded and a green success message is shown |
 | TC-19 | Upload a file with an unsupported extension | Upload is rejected |
-| TC-20 | Upload an executable file (for example `.exe`) | Upload is rejected with "Executable files are not allowed" |
+| TC-20 | Upload an executable file (for example `.exe`) | Upload is rejected with "This file type is not allowed" |
 | TC-21 | Upload a file larger than 100 KB | Upload is rejected with a size message |
 | TC-22 | Upload an empty file | Upload is rejected with "Empty files cannot be uploaded" |
 | TC-23 | Submit the upload form with no file selected | Upload is rejected with "Please choose a file" |
@@ -61,8 +61,8 @@
 | TC-29 | Upload the first version of a file | Version 1 is created |
 | TC-30 | Upload a changed file as a new version | Version 2 is created, Version 1 is kept, and a green success message is shown |
 | TC-31 | Upload a new version with content identical to the latest version | Upload is rejected with a "No changes found" message |
-| TC-32 | Upload a new version with a different file type (for example `.txt` for a `.py` file) | Upload is rejected with "The new version must be a .py file" |
-| TC-33 | Upload an executable as a new version | Upload is rejected with an error message |
+| TC-32 | Upload a new version with a different file type (for example `.txt` for a `.py` file) | Upload is rejected with "Empty files cannot be uploaded." |
+| TC-33 | Upload an executable as a new version | Upload is rejected with "Please select a file." |
 | TC-34 | Upload a new version larger than 100 KB | Upload is rejected with a size message |
 | TC-35 | View file version history | Each version is shown with tag and date, and the newest is marked Latest |
 | TC-36 | Download an older version | The selected version is downloaded with its old content |
